@@ -1,7 +1,7 @@
 from django.urls import include, path
 from django.views.generic import RedirectView
 
-from .views import auth, event, locale, robots, user, wizard
+from .views import auth, event, locale, otp, robots, user, wizard
 
 app_name = "cfp"
 urlpatterns = [
@@ -41,6 +41,31 @@ urlpatterns = [
                     "me/delete",
                     user.DeleteAccountView.as_view(),
                     name="event.user.delete",
+                ),
+                path(
+                    "me/otp/",
+                    otp.OTPManageView.as_view(),
+                    name="event.user.otp",
+                ),
+                path(
+                    "me/otp/setup",
+                    otp.OTPSetupView.as_view(),
+                    name="event.user.otp.setup",
+                ),
+                path(
+                    "me/otp/backup-codes",
+                    otp.OTPBackupCodesView.as_view(),
+                    name="event.user.otp.backup_codes",
+                ),
+                path(
+                    "me/otp/regenerate",
+                    otp.OTPRegenerateBackupCodesView.as_view(),
+                    name="event.user.otp.regenerate",
+                ),
+                path(
+                    "me/otp/disable",
+                    otp.OTPDisableView.as_view(),
+                    name="event.user.otp.disable",
                 ),
                 path(
                     "me/submissions/",

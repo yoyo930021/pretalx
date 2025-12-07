@@ -258,6 +258,20 @@ profile_bottom_html = django.dispatch.Signal()
 To display additional HTML content on the user profile/settings pages.
 """
 
+login_form = django.dispatch.Signal()
+"""
+This signal allows plugins to add custom form elements to the login form,
+such as OTP fields or other authentication factors.
+
+The signal is called with the ``request`` keyword argument and the same kwargs
+that would be passed to the form's ``__init__`` method (typically ``data``, ``files``).
+Receivers may return either a single form or a list of forms. Forms with a ``label``
+attribute will be rendered with this label as heading.
+
+Unlike EventPluginSignal, this is a regular Django signal since login
+can occur outside of event context (e.g., /orga/login).
+"""
+
 register_locales = django.dispatch.Signal()
 """
 To provide additional languages via plugins, you will have to provide some settings in

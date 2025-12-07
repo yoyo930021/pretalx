@@ -105,8 +105,9 @@ class CreateOrUpdateView(
         return super().post(request, *args, **kwargs)
 
 
-class GenericLoginView(FormView):
+class GenericLoginView(FormSignalMixin, FormView):
     form_class = UserForm
+    extra_forms_signal = "pretalx.common.signals.login_form"
 
     @context
     def password_reset_link(self):
@@ -150,7 +151,29 @@ class GenericLoginView(FormView):
     def form_valid(self, form):
         pk = form.save()
         user = User.objects.filter(pk=pk).first()
+
+        # Validate extra forms (e.g., OTP) before logging in
+        for f in self.extra_forms:
+            if not f.is_valid():
+                if hasattr(f, 'errors') and f.errors:
+                    for field, errors in f.errors.items():
+                        for error in errors:
+                            messages.error(self.request, error)
+                return self.form_invalid(form)
+
+        # All validations passed, log the user in
         login(self.request, user, backend="django.contrib.auth.backends.ModelBackend")
+
+        # Save extra forms (e.g., record OTP usage)
+        for f in self.extra_forms:
+            try:
+                f.save()
+            except Exception:
+                message = _("Some additional data could not be saved.")
+                if label := getattr(f, "label", None):
+                    message = f"[{label}] {message}"
+                messages.warning(self.request, message)
+
         return self.get_redirect()
 
 
