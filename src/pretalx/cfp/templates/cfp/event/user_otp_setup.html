@@ -1,0 +1,60 @@
+{% extends "cfp/event/base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Set Up Two-Factor Authentication" %} :: {% endblock title %}
+
+{% block content %}
+    <h2>{% translate "Set Up Two-Factor Authentication" %}</h2>
+
+    <div class="alert alert-info">
+        <strong>{% translate "Step-by-step guide" %}</strong>
+        <ol class="mb-0 mt-2">
+            <li>{% translate "Install an authenticator app on your phone if you haven't already (e.g., Google Authenticator, Authy, or similar)" %}</li>
+            <li>{% translate "Scan the QR code below with your authenticator app" %}</li>
+            <li>{% translate "Enter the 6-digit code from your app to confirm setup" %}</li>
+            <li>{% translate "Save your backup codes in a safe place" %}</li>
+        </ol>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <h3>{% translate "Scan QR Code" %}</h3>
+            <div class="text-center mb-4">
+                <img src="{{ qr_code_data }}" alt="{% translate 'QR Code' %}" class="img-fluid" style="max-width: 300px;">
+            </div>
+            <div class="alert alert-secondary">
+                <strong>{% translate "Can't scan the code?" %}</strong>
+                <p class="mb-0">
+                    {% translate "Enter this secret key manually in your authenticator app:" %}
+                    <br>
+                    <code class="user-select-all">{{ secret }}</code>
+                </p>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <h3>{% translate "Verify Setup" %}</h3>
+            <p>{% translate "Enter the 6-digit code from your authenticator app to confirm that everything is working correctly." %}</p>
+
+            <form method="post">
+                {% csrf_token %}
+                {% include "common/forms/errors.html" %}
+
+                {{ form.verification_code.as_field_group }}
+
+                <div class="alert alert-warning">
+                    <small>
+                        {% translate "Make sure to save your backup codes after enabling two-factor authentication. You'll need them if you lose access to your authenticator app." %}
+                    </small>
+                </div>
+
+                <button type="submit" class="btn btn-success btn-block btn-lg">
+                    {% translate "Enable Two-Factor Authentication" %}
+                </button>
+                <a href="{{ request.event.urls.user_otp }}" class="btn btn-secondary btn-block">
+                    {% translate "Cancel" %}
+                </a>
+            </form>
+        </div>
+    </div>
+{% endblock content %}

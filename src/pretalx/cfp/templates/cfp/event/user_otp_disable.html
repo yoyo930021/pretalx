@@ -1,0 +1,44 @@
+{% extends "cfp/event/base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Disable Two-Factor Authentication" %} :: {% endblock title %}
+
+{% block content %}
+    <h2>{% translate "Disable Two-Factor Authentication" %}</h2>
+
+    <div class="alert alert-danger">
+        <strong>{% translate "Warning: This will reduce your account security" %}</strong>
+        <p class="mb-0">
+            {% translate "Disabling two-factor authentication will make your account less secure. You'll only need your password to log in." %}
+        </p>
+    </div>
+
+    <h3>{% translate "What will happen?" %}</h3>
+    <p>{% translate "If you disable two-factor authentication:" %}</p>
+    <ul>
+        <li>{% translate "Your TOTP secret will be deleted" %}</li>
+        <li>{% translate "All backup codes will be invalidated" %}</li>
+        <li>{% translate "You'll only need your password to log in" %}</li>
+        <li>{% translate "You can re-enable it at any time with a new setup" %}</li>
+    </ul>
+
+    <form method="post">
+        {% csrf_token %}
+        {% include "common/forms/errors.html" %}
+
+        {{ form.password.as_field_group }}
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <button type="submit" class="btn btn-danger btn-block btn-lg">
+                    {% translate "Disable Two-Factor Authentication" %}
+                </button>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ request.event.urls.user_otp }}" class="btn btn-secondary btn-block btn-lg">
+                    {% translate "Cancel" %}
+                </a>
+            </div>
+        </div>
+    </form>
+{% endblock content %}

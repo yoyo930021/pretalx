@@ -1,0 +1,86 @@
+{% extends "cfp/event/base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Backup Codes" %} :: {% endblock title %}
+
+{% block content %}
+    <h2>{% translate "Backup Codes" %}</h2>
+
+    {% if new_codes %}
+        <div class="alert alert-success">
+            <strong>{% translate "New backup codes generated" %}</strong>
+            <p class="mb-0">
+                {% translate "Your new backup codes are displayed below. This is the only time they will be shown." %}
+            </p>
+        </div>
+
+        <div class="alert alert-danger">
+            <strong>{% translate "Save these codes now!" %}</strong>
+            <p class="mb-0">
+                {% translate "Store these backup codes in a safe place. Each code can only be used once. If you lose access to your authenticator app, you'll need these codes to access your account." %}
+            </p>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h3 class="card-title">{% translate "Your Backup Codes" %}</h3>
+                <div class="row">
+                    {% for code in backup_codes %}
+                        <div class="col-md-6">
+                            <code class="d-block p-2 mb-2 bg-light border rounded text-monospace" style="font-size: 1.1em; letter-spacing: 2px;">
+                                {{ code }}
+                            </code>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <button onclick="window.print()" class="btn btn-info btn-block">
+                    {% translate "Print Backup Codes" %}
+                </button>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ request.event.urls.user_otp }}" class="btn btn-success btn-block">
+                    {% translate "I've Saved My Codes" %}
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <p class="mb-0">
+                {% translate "Backup codes can be used to access your account if you lose access to your authenticator app. Each code can only be used once." %}
+            </p>
+        </div>
+
+        <p>
+            {% blocktranslate count counter=backup_codes_remaining %}
+                You have {{ counter }} backup code remaining.
+            {% plural %}
+                You have {{ counter }} backup codes remaining.
+            {% endblocktranslate %}
+        </p>
+
+        <div class="alert alert-warning">
+            <strong>{% translate "Backup codes are hidden for security" %}</strong>
+            <p class="mb-0">
+                {% translate "For security reasons, we cannot display your existing backup codes. If you've lost access to them, you can regenerate new codes." %}
+            </p>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{{ request.event.urls.user_otp_regenerate }}" class="btn btn-warning btn-block">
+                    {% translate "Regenerate Backup Codes" %}
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ request.event.urls.user_otp }}" class="btn btn-secondary btn-block">
+                    {% translate "Back to Settings" %}
+                </a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}

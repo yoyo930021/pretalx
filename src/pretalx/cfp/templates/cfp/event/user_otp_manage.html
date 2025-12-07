@@ -1,0 +1,80 @@
+{% extends "cfp/event/base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Two-Factor Authentication" %} :: {% endblock title %}
+
+{% block content %}
+    <h2>{% translate "Two-Factor Authentication" %}</h2>
+
+    {% if otp_device.enabled %}
+        <div class="alert alert-success">
+            <strong>{% translate "Two-factor authentication is enabled" %}</strong>
+            <p class="mb-0">
+                {% translate "Your account is protected with two-factor authentication." %}
+                {% if otp_device.last_used %}
+                    {% blocktranslate with date=otp_device.last_used|date:"SHORT_DATETIME_FORMAT" %}Last used: {{ date }}{% endblocktranslate %}
+                {% endif %}
+            </p>
+        </div>
+
+        <h3>{% translate "Backup Codes" %}</h3>
+        <p>
+            {% translate "Backup codes can be used to access your account if you lose access to your authenticator app. Each code can only be used once." %}
+        </p>
+        <p>
+            {% blocktranslate count counter=backup_codes_remaining %}
+                You have {{ counter }} backup code remaining.
+            {% plural %}
+                You have {{ counter }} backup codes remaining.
+            {% endblocktranslate %}
+        </p>
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <a href="{{ request.event.urls.user_otp_backup_codes }}" class="btn btn-info btn-block">
+                    {% translate "View Backup Codes" %}
+                </a>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ request.event.urls.user_otp_regenerate }}" class="btn btn-warning btn-block">
+                    {% translate "Regenerate Backup Codes" %}
+                </a>
+            </div>
+        </div>
+
+        <h3>{% translate "Disable Two-Factor Authentication" %}</h3>
+        <p>{% translate "If you no longer want to use two-factor authentication, you can disable it here." %}</p>
+        <div class="row">
+            <div class="col-md-6">
+                <a href="{{ request.event.urls.user_otp_disable }}" class="btn btn-danger btn-block">
+                    {% translate "Disable Two-Factor Authentication" %}
+                </a>
+            </div>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            <strong>{% translate "Two-factor authentication is not enabled" %}</strong>
+            <p class="mb-0">
+                {% translate "Protect your account by enabling two-factor authentication. You'll need an authenticator app on your phone." %}
+            </p>
+        </div>
+
+        <h3>{% translate "Why use two-factor authentication?" %}</h3>
+        <p>
+            {% translate "Two-factor authentication adds an extra layer of security to your account. In addition to your password, you'll need to enter a code from your authenticator app when logging in." %}
+        </p>
+
+        <h3>{% translate "What you'll need" %}</h3>
+        <ul>
+            <li>{% translate "An authenticator app on your phone (e.g., Google Authenticator, Authy, or similar)" %}</li>
+            <li>{% translate "Access to this device to scan a QR code" %}</li>
+        </ul>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <a href="{{ request.event.urls.user_otp_setup }}" class="btn btn-success btn-block btn-lg">
+                    {% translate "Enable Two-Factor Authentication" %}
+                </a>
+            </div>
+        </div>
+    {% endif %}
+{% endblock content %}

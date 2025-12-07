@@ -44,6 +44,13 @@ class OTPManageView(LoggedInEventPageMixin, TemplateView):
         """Check if user has backup codes."""
         return self.otp_device and len(self.otp_device.backup_codes) > 0
 
+    @context
+    def backup_codes_remaining(self):
+        """Get count of remaining backup codes."""
+        if self.otp_device:
+            return len(self.otp_device.backup_codes)
+        return 0
+
 
 @method_decorator(login_required, name="dispatch")
 class OTPSetupView(LoggedInEventPageMixin, FormView):
@@ -112,6 +119,11 @@ class OTPSetupView(LoggedInEventPageMixin, FormView):
         """Get the secret key for manual entry."""
         return self.otp_device.secret
 
+    @context
+    def secret(self):
+        """Get the secret key for manual entry (alias for template)."""
+        return self.otp_device.secret
+
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['otp_device'] = self.otp_device
@@ -167,6 +179,19 @@ class OTPBackupCodesView(LoggedInEventPageMixin, TemplateView):
         # Format codes for better readability (groups of 4)
         return [f"{code[:4]}-{code[4:]}" if len(code) == 8 else code for code in codes]
 
+    @context
+    def new_codes(self):
+        """Check if showing newly generated codes."""
+        return 'new_backup_codes' in self.request.session
+
+    @context
+    def backup_codes_remaining(self):
+        """Get count of remaining backup codes."""
+        try:
+            return len(self.request.user.otp_device.backup_codes)
+        except (OTPDevice.DoesNotExist, AttributeError):
+            return 0
+
     def post(self, request, *args, **kwargs):
         """Clear backup codes from session after user confirms."""
         if 'new_backup_codes' in request.session:
@@ -196,6 +221,14 @@ class OTPRegenerateBackupCodesView(LoggedInEventPageMixin, TemplateView):
             return redirect("cfp:event.user.otp", event=request.event.slug)
 
         return super().dispatch(request, *args, **kwargs)
+
+    @context
+    def backup_codes_remaining(self):
+        """Get count of remaining backup codes."""
+        try:
+            return len(self.request.user.otp_device.backup_codes)
+        except (OTPDevice.DoesNotExist, AttributeError):
+            return 0
 
     def post(self, request, *args, **kwargs):
         """Regenerate backup codes."""

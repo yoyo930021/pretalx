@@ -1,0 +1,49 @@
+{% extends "cfp/event/base.html" %}
+{% load i18n %}
+
+{% block title %}{% translate "Regenerate Backup Codes" %} :: {% endblock title %}
+
+{% block content %}
+    <h2>{% translate "Regenerate Backup Codes" %}</h2>
+
+    <div class="alert alert-danger">
+        <strong>{% translate "Warning: This will invalidate all existing backup codes" %}</strong>
+        <p class="mb-0">
+            {% translate "If you regenerate your backup codes, all of your existing backup codes will stop working immediately. You'll receive a new set of codes that you should save in a safe place." %}
+        </p>
+    </div>
+
+    <h3>{% translate "Current status" %}</h3>
+    <p>
+        {% blocktranslate count counter=backup_codes_remaining %}
+            You currently have {{ counter }} unused backup code.
+        {% plural %}
+            You currently have {{ counter }} unused backup codes.
+        {% endblocktranslate %}
+    </p>
+
+    <h3>{% translate "Why regenerate?" %}</h3>
+    <p>{% translate "You might want to regenerate your backup codes if:" %}</p>
+    <ul>
+        <li>{% translate "You've lost access to your existing backup codes" %}</li>
+        <li>{% translate "You've used most or all of your backup codes" %}</li>
+        <li>{% translate "You think your backup codes may have been compromised" %}</li>
+    </ul>
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <button type="submit" class="btn btn-danger btn-block btn-lg">
+                    {% translate "Regenerate Backup Codes" %}
+                </button>
+            </div>
+            <div class="col-md-6">
+                <a href="{{ request.event.urls.user_otp }}" class="btn btn-secondary btn-block btn-lg">
+                    {% translate "Cancel" %}
+                </a>
+            </div>
+        </div>
+    </form>
+{% endblock content %}
