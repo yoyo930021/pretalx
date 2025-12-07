@@ -8,7 +8,7 @@ from django_scopes.forms import SafeModelMultipleChoiceField
 from i18nfield.forms import I18nModelForm
 
 from pretalx.common.forms.fields import ColorField, ImageField
-from pretalx.common.forms.mixins import I18nHelpText, ReadOnlyFlag
+from pretalx.common.forms.mixins import I18nHelpText, JsonSubfieldMixin, ReadOnlyFlag
 from pretalx.common.forms.renderers import InlineFormRenderer
 from pretalx.common.forms.widgets import (
     EnhancedSelect,
@@ -151,7 +151,15 @@ class TeamInviteForm(ReadOnlyFlag, forms.ModelForm):
         fields = ("email",)
 
 
-class OrganiserForm(ReadOnlyFlag, I18nHelpText, I18nModelForm):
+class OrganiserForm(ReadOnlyFlag, I18nHelpText, JsonSubfieldMixin, I18nModelForm):
+    enforce_2fa = forms.BooleanField(
+        label=_("Require two-factor authentication for team members"),
+        help_text=_(
+            "Team members will be required to enable two-factor authentication before they can access this organiser's events."
+        ),
+        required=False,
+    )
+
     def __init__(self, *args, **kwargs):
         kwargs["locales"] = "en"
         super().__init__(*args, **kwargs)
@@ -162,6 +170,9 @@ class OrganiserForm(ReadOnlyFlag, I18nHelpText, I18nModelForm):
     class Meta:
         model = Organiser
         fields = ("name", "slug")
+        json_fields = {
+            "enforce_2fa": "enforce_2fa",
+        }
 
 
 class EventWizardInitialForm(forms.Form):

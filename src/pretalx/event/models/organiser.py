@@ -11,6 +11,7 @@ from django_scopes import scope, scopes_disabled
 from i18nfield.fields import I18nCharField
 
 from pretalx.common.models.mixins import PretalxModel
+from pretalx.common.models.settings import hierarkey
 from pretalx.common.urls import EventUrls, build_absolute_uri
 from pretalx.event.models.event import FULL_SLUG_REGEX
 from pretalx.event.rules import (
@@ -84,6 +85,7 @@ def check_access_permissions(organiser):
     return warnings
 
 
+@hierarkey.add()
 class Organiser(PretalxModel):
     """The Organiser model represents the entity responsible for at least one.
 

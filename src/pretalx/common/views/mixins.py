@@ -259,6 +259,97 @@ class EventPermissionRequired(PermissionRequired):
     def get_permission_object(self):
         return self.request.event
 
+    def dispatch(self, request, *args, **kwargs):
+        # Check for 2FA enforcement before checking permissions
+        if request.user.is_authenticated and hasattr(request, 'event') and request.event:
+            enforce_2fa = request.event.settings.get('enforce_2fa', as_type=bool)
+            if enforce_2fa:
+                from pretalx.person.models import OTPDevice
+
+                try:
+                    otp_device = request.user.otp_device
+                    if not otp_device.enabled:
+                        from django.contrib import messages
+                        from django.utils.translation import gettext as _
+
+                        messages.warning(
+                            request,
+                            _("Two-factor authentication is required to access this area. Please enable it now.")
+                        )
+                        return redirect('cfp:event.user.otp.setup', event=request.event.slug)
+                except OTPDevice.DoesNotExist:
+                    from django.contrib import messages
+                    from django.utils.translation import gettext as _
+
+                    messages.warning(
+                        request,
+                        _("Two-factor authentication is required to access this area. Please set it up now.")
+                    )
+                    return redirect('cfp:event.user.otp.setup', event=request.event.slug)
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+class Enforce2FAMixin:
+    """
+    Mixin to enforce two-factor authentication for team members.
+
+    This mixin checks if 2FA is required for the current organizer or event,
+    and if the user has 2FA enabled. If not, it redirects to the OTP setup page.
+    """
+
+    def dispatch(self, request, *args, **kwargs):
+        # Only check for authenticated users
+        if request.user.is_authenticated:
+            # Check if we're in an event or organizer context
+            enforce_2fa = False
+
+            # Check event-level enforcement
+            if hasattr(request, 'event') and request.event:
+                enforce_2fa = request.event.settings.get('enforce_2fa', as_type=bool)
+            # Check organizer-level enforcement if no event or event doesn't enforce
+            elif hasattr(request, 'organiser') and request.organiser:
+                enforce_2fa = request.organiser.settings.get('enforce_2fa', as_type=bool)
+
+            # If 2FA is enforced, check if user has it enabled
+            if enforce_2fa:
+                from pretalx.person.models import OTPDevice
+
+                try:
+                    otp_device = request.user.otp_device
+                    if not otp_device.enabled:
+                        from django.contrib import messages
+                        from django.shortcuts import redirect
+                        from django.utils.translation import gettext as _
+
+                        messages.warning(
+                            request,
+                            _("Two-factor authentication is required to access this area. Please enable it now.")
+                        )
+                        # Redirect to OTP setup page
+                        if hasattr(request, 'event'):
+                            return redirect('cfp:event.user.otp.setup', event=request.event.slug)
+                        else:
+                            # For organizer-only pages, redirect to user profile
+                            # (users would need to access via an event first)
+                            messages.error(
+                                request,
+                                _("Please enable two-factor authentication via an event page first.")
+                            )
+                except OTPDevice.DoesNotExist:
+                    from django.contrib import messages
+                    from django.shortcuts import redirect
+                    from django.utils.translation import gettext as _
+
+                    messages.warning(
+                        request,
+                        _("Two-factor authentication is required to access this area. Please set it up now.")
+                    )
+                    if hasattr(request, 'event'):
+                        return redirect('cfp:event.user.otp.setup', event=request.event.slug)
+
+        return super().dispatch(request, *args, **kwargs)
+
 
 class SensibleBackWizardMixin:
     def post(self, *args, **kwargs):

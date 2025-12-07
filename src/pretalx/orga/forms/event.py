@@ -143,6 +143,13 @@ class EventForm(ReadOnlyFlag, I18nHelpText, JsonSubfieldMixin, I18nModelForm):
     meta_noindex = forms.BooleanField(
         label=_("Ask search engines not to index the event pages"), required=False
     )
+    enforce_2fa = forms.BooleanField(
+        label=_("Require two-factor authentication for team members"),
+        help_text=_(
+            "Team members will be required to enable two-factor authentication before they can access this event's organizer area."
+        ),
+        required=False,
+    )
 
     def __init__(self, *args, **kwargs):
         self.is_administrator = kwargs.pop("is_administrator", False)
@@ -366,6 +373,7 @@ class EventForm(ReadOnlyFlag, I18nHelpText, JsonSubfieldMixin, I18nModelForm):
             "html_export_url": "display_settings",
             "header_pattern": "display_settings",
             "meta_noindex": "display_settings",
+            "enforce_2fa": "enforce_2fa",
         }
 
 

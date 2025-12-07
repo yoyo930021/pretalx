@@ -52,6 +52,9 @@ hierarkey.add_default("sent_mail_event_created", "False", bool)
 hierarkey.add_default("sent_mail_cfp_closed", "False", bool)
 hierarkey.add_default("sent_mail_event_over", "False", bool)
 
+# Two-factor authentication enforcement settings
+hierarkey.add_default("enforce_2fa", "False", bool)
+
 hierarkey.add_default(
     "review_help_text",
     LazyI18nString.from_gettext(
